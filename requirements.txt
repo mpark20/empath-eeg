@@ -1,5 +1,13 @@
 altair
+argparse
 numpy
 pandas
 pydeck
 streamlit
+brainflow
+random
+scipy
+os
+sys
+pickle
+openai
