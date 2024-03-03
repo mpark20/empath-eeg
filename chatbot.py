@@ -14,9 +14,9 @@
 
 import streamlit as st
 from openai import OpenAI
-import pickle
 import numpy as np
 import os
+import pandas as pd
 from process import predict_emotion, process_prompt
 
 
@@ -51,11 +51,12 @@ def run():
             st.markdown(message["content"])
 
     st.write("# Welcome to EmpathEEG! 💭")
+    
+    data = pd.read_csv('data/emotions.csv')
+    input = data.iloc[0].to_numpy()
+    pred = predict_emotion(input[:-1].reshape(1, -1))
 
-    st.markdown(
-        """
-        """
-    )
+    st.markdown(pred)
     st.subheader('\nWhat are you thinking about?\n')
     if prompt := st.chat_input("What's up?"):
         label = predict_emotion()

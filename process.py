@@ -13,12 +13,16 @@ def process_prompt(role, text, label):
 
 def predict_emotion(data):
     '''
-    Returns the predicted emotion given a row of data
+    Returns the predicted emotion (int) given a row of data
+    0=negative, 1=neutral, 2=positive
+
+    data: 1d ndarray of features
     '''    
     # TODO : preprocess into binned data
-    with open('../models/classifierV0', 'rb') as f:
+    input = data.reshape(-1, 1) # reshape into 2d array
+    with open('models/classifierV0', 'rb') as f:
         loaded_rf = pickle.load(f)
-        pred = loaded_rf.predict(data)  
+        pred = loaded_rf.predict(input)  
     return pred
 
 def read():
