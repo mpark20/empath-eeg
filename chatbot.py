@@ -26,21 +26,10 @@ client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
 if "openai_model" not in st.session_state:
     st.session_state["openai_model"] = "gpt-3.5-turbo"
-
-def classify(data):
-    
-    with open('../models/classifierV0', 'rb') as f:
-        loaded_rf = pickle.load(f)
-        preds = loaded_rf.predict(data)
-        neg_score = sum(np.where(preds==0, 1, 0))
-        neutral_score = sum(np.where(preds==1, 1, 0))
-        pos_score = sum(np.where(preds==2, 1, 0))
-    
     
 #on FIRST CHAT, append primer to beginning of prompt
-f = open('./chatbot-primer.txt')
-primer = f.read()
-f.close()
+with open('./chatbot-primer.txt', 'rb') as f:
+    primer = f.read()
 
 
 def run():
@@ -62,7 +51,6 @@ def run():
             st.markdown(message["content"])
 
     st.write("# Welcome to EmpathEEG! 💭")
-
 
     st.markdown(
         """
