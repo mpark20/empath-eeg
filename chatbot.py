@@ -14,7 +14,8 @@
 
 import streamlit as st
 from openai import OpenAI
-import os
+import pickle
+import numpy as np
 
 
 # DESIGN implement changes to the standard streamlit UI/UX
@@ -23,6 +24,18 @@ client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
 if "openai_model" not in st.session_state:
     st.session_state["openai_model"] = "gpt-3.5-turbo"
+
+def classify(data):
+    
+    with open('../models/classifierV0', 'rb') as f:
+        loaded_rf = pickle.load(f)
+        preds = loaded_rf.predict(data)
+        neg_score = sum(np.where(preds==0, 1, 0))
+        neutral_score = sum(np.where(preds==1, 1, 0))
+        pos_score = sum(np.where(preds==2, 1, 0))
+    
+    
+
 
 def run():
     st.set_page_config(
