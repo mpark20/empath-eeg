@@ -15,6 +15,7 @@
 import streamlit as st
 from openai import OpenAI
 import os
+from process import predict_emotion, process_prompt
 
 
 # DESIGN implement changes to the standard streamlit UI/UX
@@ -23,6 +24,12 @@ client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
 if "openai_model" not in st.session_state:
     st.session_state["openai_model"] = "gpt-3.5-turbo"
+
+#on FIRST CHAT, append primer to beginning of prompt
+f = open('./chatbot-primer.txt')
+primer = f.read()
+f.close()
+
 
 def run():
     st.set_page_config(
@@ -33,6 +40,9 @@ def run():
     # Initialize chat history
     if "messages" not in st.session_state:
         st.session_state.messages = []
+
+    if "labels" not in st.session_state:
+        st.session_state.labels = []
 
     # Display chat messages from history on app rerun
     for message in st.session_state.messages:
@@ -47,26 +57,34 @@ def run():
         """
     )
     st.subheader('\nWhat are you thinking about?\n')
-    if prompt := st.chat_input("What is up?"):
+    if prompt := st.chat_input("What's up?"):
+        label = predict_emotion()
+        st.session_state.labels.append(label)
     # Display user message in chat message container
         with st.chat_message("user"):
             st.markdown(prompt)
         # Add user message to chat history
         st.session_state.messages.append({"role": "user", "content": prompt})
-        response = f"Echo: {prompt}"
 
         # Display assistant response in chat message container
         with st.chat_message("assistant"):
+            #this prepends the introductory primer that tells model to be empathetic to first prompt
+            #we do this each time since we don't want to display primer in chat history
+            l = st.session_state.labels[0]
+            p = process_prompt(st.session_state.messages[0]["role"], st.session_state.messages[0]["content"], l)
+            primed = [{"role": st.session_state.messages[0]["role"],
+                "content": ''.join([primer, '\n', p])}]
             stream = client.chat.completions.create(
                 model=st.session_state["openai_model"],
-                messages=[
-                    {"role": m["role"], "content": m["content"]}
-                    for m in st.session_state.messages
+                messages = primed + [
+                    {"role": m["role"], "content": process_prompt(m["role"], m["content"], l)}
+                    for m, l in zip(st.session_state.messages[1:], st.session_state.labels[1:])
                 ],
                 stream=True,
             )
             response = st.write_stream(stream)
         st.session_state.messages.append({"role": "assistant", "content": response})
+        st.session_state.labels.append("-1") #evens out label list. assistants have no emotion tag
 
 
 if __name__ == "__main__":
