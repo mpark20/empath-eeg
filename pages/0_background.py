@@ -38,3 +38,4 @@ via EEG and adjusts its responses to match your energy.
 
 """
 )
+st.image('empatheeg.jpg')
